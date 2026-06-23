@@ -13,6 +13,47 @@
     header { text-align: center; margin-bottom: 40px; }
     header h1 { font-size: 2rem; font-weight: 700; color: #fff; }
     header p { color: #888; margin-top: 6px; font-size: 0.95rem; }
+
+    /* Edit mode toggle bar */
+    .edit-bar {
+      max-width: 1100px; margin: 0 auto 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 12px; padding: 12px 18px;
+    }
+    .edit-bar-left { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; }
+    .edit-indicator { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+    .edit-indicator.off { background: #444; }
+    .edit-bar-right { display: flex; gap: 8px; }
+    .btn {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; border: none; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-edit { background: #fc4c02; color: #fff; }
+    .btn-save { background: #4ade80; color: #000; }
+    .btn-reset { background: #2a2a2a; color: #888; }
+
+    /* Editable fields */
+    [contenteditable="true"] {
+      outline: none;
+      border-radius: 4px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    [contenteditable="true"]:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    [contenteditable="true"]:focus {
+      background: rgba(252,76,2,0.08);
+      box-shadow: 0 0 0 1px #fc4c0260;
+    }
+    body.edit-mode [contenteditable="true"]::after {
+      content: ' ✏';
+      font-size: 0.65em;
+      color: #fc4c0280;
+      pointer-events: none;
+    }
+
     .week-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -30,13 +71,12 @@
       background: #fc4c02; color: #fff; font-size: 0.65rem; font-weight: 700;
       padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
     }
-    .day-card.done { opacity: 0.5; }
+    .day-card.done { opacity: 0.55; }
     .day-card.done::before {
       content: '✓ DONE'; position: absolute; top: 14px; right: 14px;
       background: #4ade80; color: #000; font-size: 0.65rem; font-weight: 700;
       padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
     }
-    .day-card.rest { border-color: #333; }
     .day-card.rest::before {
       content: 'REST'; position: absolute; top: 14px; right: 14px;
       background: #333; color: #888; font-size: 0.65rem; font-weight: 700;
@@ -60,6 +100,18 @@
     }
     .detail-list li::before { content: '→'; color: #555; flex-shrink: 0; margin-top: 1px; }
     .highlight { color: #fc4c02; font-weight: 600; }
+
+    /* Add row button (only in edit mode) */
+    .add-item-btn {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.75rem; color: #555; background: none; border: 1px dashed #333;
+      border-radius: 6px; padding: 5px 10px; cursor: pointer; width: 100%;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .add-item-btn:hover { color: #fc4c02; border-color: #fc4c0260; }
+    body.edit-mode .add-item-btn { display: block; }
+
     .priority-section {
       max-width: 1100px; margin: 0 auto 48px; background: #1a1a1a;
       border-radius: 16px; padding: 24px; border: 1px solid #2a2a2a;
@@ -96,7 +148,20 @@
     .badge-hard { background: #fc4c0220; color: #fc4c02; }
     .badge-easy { background: #4ade8020; color: #4ade80; }
     .badge-warm { background: #60a5fa20; color: #60a5fa; }
-    footer { text-align: center; color: #444; font-size: 0.8rem; max-width: 1100px; margin: 0 auto; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      color: #f0f0f0; font-size: 0.82rem; font-weight: 500;
+      padding: 10px 16px; border-radius: 10px;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    footer { text-align: center; color: #444; font-size: 0.8rem; max-width: 1100px; margin: 0 auto; padding-top: 16px; }
     footer span { color: #fc4c02; }
   </style>
 </head>
@@ -107,93 +172,112 @@
   <p>KW 26 · 23.–29. Juni 2026 · Post-HYROX Woche</p>
 </header>
 
-<div class="week-grid">
+<!-- Edit Bar -->
+<div class="edit-bar">
+  <div class="edit-bar-left">
+    <div class="edit-indicator off" id="editIndicator"></div>
+    <span id="editStatus">Bearbeitungsmodus aus — klicke „Bearbeiten“ um Änderungen vorzunehmen</span>
+  </div>
+  <div class="edit-bar-right">
+    <button class="btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+    <button class="btn btn-edit" id="editBtn" onclick="toggleEdit()">Bearbeiten</button>
+  </div>
+</div>
+
+<div class="week-grid" id="weekGrid">
 
   <div class="day-card done">
     <div class="day-label">Montag · 23. Juni</div>
-    <div class="day-title">HYROX</div>
+    <div class="day-title" contenteditable="false" data-key="mo-title">HYROX</div>
     <span class="tag tag-hyrox">⚡ HYROX</span>
-    <ul class="detail-list">
-      <li>Functional Fitness + Laufen</li>
-      <li>Voller Ganzkörpereinsatz</li>
-      <li><span class="highlight">✓ Erledigt</span></li>
+    <ul class="detail-list" id="list-mo">
+      <li><span contenteditable="false" data-key="mo-0">Functional Fitness + Laufen</span></li>
+      <li><span contenteditable="false" data-key="mo-1">Voller Ganzkörpereinsatz</span></li>
+      <li><span class="highlight" contenteditable="false" data-key="mo-2">✓ Erledigt</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-mo')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card today">
     <div class="day-label">Dienstag · 24. Juni</div>
-    <div class="day-title">Aktive Erholung</div>
+    <div class="day-title" contenteditable="false" data-key="di-title">Aktive Erholung</div>
     <span class="tag tag-rest">😴 Recovery</span>
-    <ul class="detail-list">
-      <li>Mobility & Foam Rolling</li>
-      <li>Spazieren gehen 20–30 min</li>
-      <li><span class="highlight">Pflicht</span> nach HYROX-Belastung</li>
-      <li>Kein Krafttraining heute</li>
+    <ul class="detail-list" id="list-di">
+      <li><span contenteditable="false" data-key="di-0">Mobility &amp; Foam Rolling</span></li>
+      <li><span contenteditable="false" data-key="di-1">Spazieren gehen 20–30 min</span></li>
+      <li><span class="highlight" contenteditable="false" data-key="di-2">Pflicht</span> nach HYROX-Belastung</li>
+      <li><span contenteditable="false" data-key="di-3">Kein Krafttraining heute</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-di')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card">
     <div class="day-label">Mittwoch · 25. Juni</div>
-    <div class="day-title">Pull + Core</div>
+    <div class="day-title" contenteditable="false" data-key="mi-title">Pull + Core</div>
     <span class="tag tag-gym">🏋️ Gym</span>
-    <ul class="detail-list">
-      <li>Klimmzüge / Lat Pulldown – 4×8–10</li>
-      <li>Barbell / DB Rows – 4×10</li>
-      <li>Rear Delt Flyes, Face Pulls</li>
-      <li>Bizepscurls – 3×12</li>
-      <li>Abschluss: <span class="highlight">2× Plank 60s</span></li>
+    <ul class="detail-list" id="list-mi">
+      <li><span contenteditable="false" data-key="mi-0">Klimmzüge / Lat Pulldown – 4×8–10</span></li>
+      <li><span contenteditable="false" data-key="mi-1">Barbell / DB Rows – 4×10</span></li>
+      <li><span contenteditable="false" data-key="mi-2">Rear Delt Flyes, Face Pulls</span></li>
+      <li><span contenteditable="false" data-key="mi-3">Bizepscurls – 3×12</span></li>
+      <li>Abschluss: <span class="highlight" contenteditable="false" data-key="mi-4">2× Plank 60s</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-mi')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card">
     <div class="day-label">Donnerstag · 26. Juni</div>
-    <div class="day-title">Tempo Run</div>
+    <div class="day-title" contenteditable="false" data-key="do-title">Tempo Run</div>
     <span class="tag tag-run">🏃 Laufen</span>
-    <ul class="detail-list">
-      <li>10 min Aufwärmen locker</li>
-      <li><span class="highlight">3× 1000m @ ~5:00/km</span></li>
-      <li>90s Trabpause zwischen Intervallen</li>
-      <li>5 min Auslaufen</li>
-      <li>Gesamt: ~6–7 km</li>
+    <ul class="detail-list" id="list-do">
+      <li><span contenteditable="false" data-key="do-0">10 min Aufwärmen locker</span></li>
+      <li><span class="highlight" contenteditable="false" data-key="do-1">3× 1000m @ ~5:00/km</span></li>
+      <li><span contenteditable="false" data-key="do-2">90s Trabpause zwischen Intervallen</span></li>
+      <li><span contenteditable="false" data-key="do-3">5 min Auslaufen</span></li>
+      <li><span contenteditable="false" data-key="do-4">Gesamt: ~6–7 km</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-do')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card">
     <div class="day-label">Freitag · 27. Juni</div>
-    <div class="day-title">Legs + Core</div>
+    <div class="day-title" contenteditable="false" data-key="fr-title">Legs + Core</div>
     <span class="tag tag-gym">🏋️ Gym</span>
-    <ul class="detail-list">
-      <li>Back Squat / Front Squat – 4×8</li>
-      <li>Romanian Deadlift – 4×10</li>
-      <li>Bulgarian Split Squat – 3×10</li>
-      <li>Leg Press – 3×12</li>
-      <li>Abschluss: <span class="highlight">Side Plank + Core</span></li>
+    <ul class="detail-list" id="list-fr">
+      <li><span contenteditable="false" data-key="fr-0">Back Squat / Front Squat – 4×8</span></li>
+      <li><span contenteditable="false" data-key="fr-1">Romanian Deadlift – 4×10</span></li>
+      <li><span contenteditable="false" data-key="fr-2">Bulgarian Split Squat – 3×10</span></li>
+      <li><span contenteditable="false" data-key="fr-3">Leg Press – 3×12</span></li>
+      <li>Abschluss: <span class="highlight" contenteditable="false" data-key="fr-4">Side Plank + Core</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-fr')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card">
     <div class="day-label">Samstag · 28. Juni</div>
-    <div class="day-title">Push (Vorsichtig)</div>
+    <div class="day-title" contenteditable="false" data-key="sa-title">Push (Vorsichtig)</div>
     <span class="tag tag-gym">🏋️ Gym</span>
-    <ul class="detail-list">
-      <li>OHP – Hauptübung, 4×8</li>
-      <li>Trizeps: Close-Grip, Skull Crushers</li>
-      <li>Brust: <span class="highlight">nur wenn Schmerz ≤ 2</span></li>
-      <li>Kein Incline DB Press!</li>
-      <li>Lateral Raises – 3×15</li>
+    <ul class="detail-list" id="list-sa">
+      <li><span contenteditable="false" data-key="sa-0">OHP – Hauptübung, 4×8</span></li>
+      <li><span contenteditable="false" data-key="sa-1">Trizeps: Close-Grip, Skull Crushers</span></li>
+      <li>Brust: <span class="highlight" contenteditable="false" data-key="sa-2">nur wenn Schmerz ≤ 2</span></li>
+      <li><span contenteditable="false" data-key="sa-3">Kein Incline DB Press!</span></li>
+      <li><span contenteditable="false" data-key="sa-4">Lateral Raises – 3×15</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-sa')">+ Zeile hinzufügen</button>
   </div>
 
   <div class="day-card">
     <div class="day-label">Sonntag · 29. Juni</div>
-    <div class="day-title">Long Run</div>
+    <div class="day-title" contenteditable="false" data-key="so-title">Long Run</div>
     <span class="tag tag-run">🏃 Laufen</span>
-    <ul class="detail-list">
-      <li><span class="highlight">55–60 min</span> – keine Pace-Vorgabe</li>
-      <li>Zone 2: 135–150 bpm durchgehend</li>
-      <li>Sehr locker – Wochenabschluss</li>
-      <li>Ab 40 min: Wasser mitnehmen</li>
+    <ul class="detail-list" id="list-so">
+      <li><span class="highlight" contenteditable="false" data-key="so-0">55–60 min</span> – keine Pace-Vorgabe</li>
+      <li><span contenteditable="false" data-key="so-1">Zone 2: 135–150 bpm durchgehend</span></li>
+      <li><span contenteditable="false" data-key="so-2">Sehr locker – Wochenabschluss</span></li>
+      <li><span contenteditable="false" data-key="so-3">Ab 40 min: Wasser mitnehmen</span></li>
     </ul>
+    <button class="add-item-btn" onclick="addItem('list-so')">+ Zeile hinzufügen</button>
   </div>
 
 </div>
@@ -205,34 +289,34 @@
     <div class="interval-step">
       <div class="step-num">1</div>
       <div class="step-info">
-        <div class="step-title">Aufwärmen</div>
-        <div class="step-detail">10 Minuten · Pace egal · einfühlen</div>
+        <div class="step-title" contenteditable="false" data-key="int-t1">Aufwärmen</div>
+        <div class="step-detail" contenteditable="false" data-key="int-d1">10 Minuten · Pace egal · einfühlen</div>
       </div>
-      <span class="step-badge badge-warm">~1,5 km</span>
+      <span class="step-badge badge-warm" contenteditable="false" data-key="int-b1">~1,5 km</span>
     </div>
     <div class="interval-step">
       <div class="step-num">2</div>
       <div class="step-info">
-        <div class="step-title">Intervall 1–3 · je 1000m</div>
-        <div class="step-detail">Ziel: ~5:00 min/km · HF 170–182 bpm</div>
+        <div class="step-title" contenteditable="false" data-key="int-t2">Intervall 1–3 · je 1000m</div>
+        <div class="step-detail" contenteditable="false" data-key="int-d2">Ziel: ~5:00 min/km · HF 170–182 bpm</div>
       </div>
-      <span class="step-badge badge-hard">5:00/km</span>
+      <span class="step-badge badge-hard" contenteditable="false" data-key="int-b2">5:00/km</span>
     </div>
     <div class="interval-step">
       <div class="step-num">3</div>
       <div class="step-info">
-        <div class="step-title">Pause zwischen Intervallen</div>
-        <div class="step-detail">90 Sekunden traben · HF runter auf ~145 bpm</div>
+        <div class="step-title" contenteditable="false" data-key="int-t3">Pause zwischen Intervallen</div>
+        <div class="step-detail" contenteditable="false" data-key="int-d3">90 Sekunden traben · HF runter auf ~145 bpm</div>
       </div>
-      <span class="step-badge badge-easy">locker</span>
+      <span class="step-badge badge-easy" contenteditable="false" data-key="int-b3">locker</span>
     </div>
     <div class="interval-step">
       <div class="step-num">4</div>
       <div class="step-info">
-        <div class="step-title">Auslaufen</div>
-        <div class="step-detail">5 Minuten · locker · Beine ausschütteln</div>
+        <div class="step-title" contenteditable="false" data-key="int-t4">Auslaufen</div>
+        <div class="step-detail" contenteditable="false" data-key="int-d4">5 Minuten · locker · Beine ausschütteln</div>
       </div>
-      <span class="step-badge badge-warm">~0,7 km</span>
+      <span class="step-badge badge-warm" contenteditable="false" data-key="int-b4">~0,7 km</span>
     </div>
   </div>
 </div>
@@ -242,7 +326,7 @@
   <div class="icon">⚠️</div>
   <div>
     <h3>Brust-Protokoll (Samstag · Push)</h3>
-    <p>Kein Incline Dumbbell Press. Bankdrücken nur bei Schmerzskala ≤ 2, sonst Kabelzüge als Ersatz. Bei Push-up-Schmerz → komplett weglassen, Trizeps-Fokus stattdessen.</p>
+    <p contenteditable="false" data-key="brust-text">Kein Incline Dumbbell Press. Bankdrücken nur bei Schmerzskala ≤ 2, sonst Kabelzüge als Ersatz. Bei Push-up-Schmerz → komplett weglassen, Trizeps-Fokus stattdessen.</p>
   </div>
 </div>
 
@@ -252,23 +336,23 @@
   <div class="priority-list">
     <div class="priority-item">
       <div class="prio-dot prio-green"></div>
-      <span class="prio-label"><strong style="color:#fff">1. Pull-Einheit (Mi)</strong> – Rücken stärken, Brust schonen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-1"><strong style="color:#fff">1. Pull-Einheit (Mi)</strong> – Rücken stärken, Brust schonen</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-green"></div>
-      <span class="prio-label"><strong style="color:#fff">2. Tempo Run (Do)</strong> – wichtig für VO₂max und Lauffortschritt</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-2"><strong style="color:#fff">2. Tempo Run (Do)</strong> – wichtig für VO₂max und Lauffortschritt</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-yellow"></div>
-      <span class="prio-label"><strong style="color:#fff">3. Legs (Fr)</strong> – Fundament für HYROX und Laufen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-3"><strong style="color:#fff">3. Legs (Fr)</strong> – Fundament für HYROX und Laufen</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-yellow"></div>
-      <span class="prio-label"><strong style="color:#fff">4. Long Run (So)</strong> – höchste Longevity-Wirkung, nicht skippen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-4"><strong style="color:#fff">4. Long Run (So)</strong> – höchste Longevity-Wirkung, nicht skippen</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-red"></div>
-      <span class="prio-label"><strong style="color:#fff">5. Push-Einheit (Sa)</strong> – niedrigste Priorität solange Brust limitiert</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-5"><strong style="color:#fff">5. Push-Einheit (Sa)</strong> – niedrigste Priorität solange Brust limitiert</span>
     </div>
   </div>
 </div>
@@ -276,6 +360,84 @@
 <footer>
   Erstellt mit Perplexity · <span>KW 26 · 2026</span> · Post-HYROX Woche
 </footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'trainingsplan-kw26-edits';
+  let editMode = false;
+
+  // --- Load saved data on startup ---
+  function loadSaved() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    document.querySelectorAll('[data-key]').forEach(el => {
+      const key = el.getAttribute('data-key');
+      if (saved[key] !== undefined) el.innerHTML = saved[key];
+    });
+  }
+
+  // --- Save all editable fields ---
+  function saveAll() {
+    const data = {};
+    document.querySelectorAll('[data-key]').forEach(el => {
+      data[el.getAttribute('data-key')] = el.innerHTML;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showToast('✓ Gespeichert');
+  }
+
+  // --- Reset to original ---
+  function resetAll() {
+    if (!confirm('Alle eigenen Änderungen zurücksetzen?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+
+  // --- Toggle edit mode ---
+  function toggleEdit() {
+    editMode = !editMode;
+    document.body.classList.toggle('edit-mode', editMode);
+    const fields = document.querySelectorAll('[data-key]');
+    fields.forEach(el => el.setAttribute('contenteditable', editMode ? 'true' : 'false'));
+    document.getElementById('editBtn').textContent = editMode ? 'Fertig' : 'Bearbeiten';
+    document.getElementById('editBtn').className = 'btn ' + (editMode ? 'btn-save' : 'btn-edit');
+    document.getElementById('editIndicator').className = 'edit-indicator' + (editMode ? '' : ' off');
+    document.getElementById('editStatus').textContent = editMode
+      ? 'Bearbeitungsmodus aktiv — klicke auf beliebigen Text zum Ändern'
+      : 'Bearbeitungsmodus aus — klicke „Bearbeiten“ um Änderungen vorzunehmen';
+    if (!editMode) saveAll();
+  }
+
+  // --- Add a new list item ---
+  function addItem(listId) {
+    const ul = document.getElementById(listId);
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.contentEditable = 'true';
+    span.textContent = 'Neue Übung – klicke zum Bearbeiten';
+    span.style.color = '#888';
+    span.setAttribute('data-key', listId + '-new-' + Date.now());
+    span.addEventListener('focus', () => { if (span.textContent.startsWith('Neue')) span.textContent = ''; span.style.color = ''; });
+    li.appendChild(span);
+    ul.insertBefore(li, ul.querySelector('.add-item-btn'));
+    span.focus();
+  }
+
+  // --- Toast ---
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // Auto-save on Ctrl+S / Cmd+S
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (editMode) saveAll(); }
+  });
+
+  loadSaved();
+</script>
 
 </body>
 </html>
