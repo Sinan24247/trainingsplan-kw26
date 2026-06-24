@@ -14,7 +14,6 @@
     header h1 { font-size: 2rem; font-weight: 700; color: #fff; }
     header p { color: #888; margin-top: 6px; font-size: 0.95rem; }
 
-    /* Edit mode toggle bar */
     .edit-bar {
       max-width: 1100px; margin: 0 auto 28px;
       display: flex; align-items: center; justify-content: space-between;
@@ -34,24 +33,17 @@
     .btn-save { background: #4ade80; color: #000; }
     .btn-reset { background: #2a2a2a; color: #888; }
 
-    /* Editable fields */
     [contenteditable="true"] {
-      outline: none;
-      border-radius: 4px;
+      outline: none; border-radius: 4px;
       transition: background 0.15s, box-shadow 0.15s;
     }
-    [contenteditable="true"]:hover {
-      background: rgba(255,255,255,0.04);
-    }
+    [contenteditable="true"]:hover { background: rgba(255,255,255,0.04); }
     [contenteditable="true"]:focus {
       background: rgba(252,76,2,0.08);
       box-shadow: 0 0 0 1px #fc4c0260;
     }
     body.edit-mode [contenteditable="true"]::after {
-      content: ' ✏';
-      font-size: 0.65em;
-      color: #fc4c0280;
-      pointer-events: none;
+      content: ' ✏'; font-size: 0.65em; color: #fc4c0280; pointer-events: none;
     }
 
     .week-grid {
@@ -65,23 +57,48 @@
       transition: transform 0.2s, border-color 0.2s;
     }
     .day-card:hover { transform: translateY(-3px); border-color: #444; }
+
+    /* TODAY — auto via JS */
     .day-card.today { border-color: #fc4c02; box-shadow: 0 0 0 1px #fc4c0240; }
-    .day-card.today::before {
-      content: 'HEUTE'; position: absolute; top: 14px; right: 14px;
+    .day-card.today .auto-badge {
+      content: ''; position: absolute; top: 14px; right: 14px;
       background: #fc4c02; color: #fff; font-size: 0.65rem; font-weight: 700;
       padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
     }
-    .day-card.done { opacity: 0.55; }
-    .day-card.done::before {
-      content: '✓ DONE'; position: absolute; top: 14px; right: 14px;
-      background: #4ade80; color: #000; font-size: 0.65rem; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
+
+    /* DONE — user toggled */
+    .day-card.done { opacity: 0.55; border-color: #2a2a2a !important; box-shadow: none !important; }
+    .day-card.done .auto-badge {
+      background: #4ade80 !important; color: #000 !important;
     }
-    .day-card.rest::before {
-      content: 'REST'; position: absolute; top: 14px; right: 14px;
-      background: #333; color: #888; font-size: 0.65rem; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
+
+    /* REST */
+    .day-card.rest .auto-badge {
+      background: #333; color: #888;
     }
+
+    .auto-badge {
+      position: absolute; top: 14px; right: 14px;
+      font-size: 0.65rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
+      cursor: pointer; user-select: none;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .auto-badge:hover { transform: scale(1.08); }
+    .auto-badge:active { transform: scale(0.95); }
+
+    /* Done-button (visible only when NOT done and not in edit mode) */
+    .done-btn {
+      display: none;
+      margin-top: 12px; width: 100%;
+      font-size: 0.75rem; font-weight: 600; padding: 7px 0;
+      border-radius: 8px; cursor: pointer; border: 1px solid #3a3a3a;
+      background: #1f1f1f; color: #666;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .done-btn:hover { background: #4ade8015; color: #4ade80; border-color: #4ade8050; }
+    body:not(.edit-mode) .day-card:not(.done):not(.rest) .done-btn { display: block; }
+
     .day-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 1px;
       text-transform: uppercase; color: #666; margin-bottom: 6px; }
     .day-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; color: #fff; }
@@ -101,7 +118,6 @@
     .detail-list li::before { content: '→'; color: #555; flex-shrink: 0; margin-top: 1px; }
     .highlight { color: #fc4c02; font-weight: 600; }
 
-    /* Add row button (only in edit mode) */
     .add-item-btn {
       display: none;
       margin-top: 10px;
@@ -149,7 +165,6 @@
     .badge-easy { background: #4ade8020; color: #4ade80; }
     .badge-warm { background: #60a5fa20; color: #60a5fa; }
 
-    /* Toast */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
       background: #1a1a1a; border: 1px solid #2a2a2a;
@@ -172,11 +187,10 @@
   <p>KW 26 · 23.–29. Juni 2026 · Post-HYROX Woche</p>
 </header>
 
-<!-- Edit Bar -->
 <div class="edit-bar">
   <div class="edit-bar-left">
     <div class="edit-indicator off" id="editIndicator"></div>
-    <span id="editStatus">Bearbeitungsmodus aus — klicke „Bearbeiten“ um Änderungen vorzunehmen</span>
+    <span id="editStatus">Bearbeitungsmodus aus — klicke „Bearbeiten" um Änderungen vorzunehmen</span>
   </div>
   <div class="edit-bar-right">
     <button class="btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
@@ -186,7 +200,8 @@
 
 <div class="week-grid" id="weekGrid">
 
-  <div class="day-card done">
+  <div class="day-card" data-date="2026-06-23" data-day="mo">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Montag · 23. Juni</div>
     <div class="day-title" contenteditable="false" data-key="mo-title">HYROX</div>
     <span class="tag tag-hyrox">⚡ HYROX</span>
@@ -196,9 +211,11 @@
       <li><span class="highlight" contenteditable="false" data-key="mo-2">✓ Erledigt</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-mo')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card today">
+  <div class="day-card" data-date="2026-06-24" data-day="di">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Dienstag · 24. Juni</div>
     <div class="day-title" contenteditable="false" data-key="di-title">Aktive Erholung</div>
     <span class="tag tag-rest">😴 Recovery</span>
@@ -209,9 +226,11 @@
       <li><span contenteditable="false" data-key="di-3">Kein Krafttraining heute</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-di')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card">
+  <div class="day-card" data-date="2026-06-25" data-day="mi">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Mittwoch · 25. Juni</div>
     <div class="day-title" contenteditable="false" data-key="mi-title">Pull + Core</div>
     <span class="tag tag-gym">🏋️ Gym</span>
@@ -223,9 +242,11 @@
       <li>Abschluss: <span class="highlight" contenteditable="false" data-key="mi-4">2× Plank 60s</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-mi')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card">
+  <div class="day-card" data-date="2026-06-26" data-day="do">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Donnerstag · 26. Juni</div>
     <div class="day-title" contenteditable="false" data-key="do-title">Tempo Run</div>
     <span class="tag tag-run">🏃 Laufen</span>
@@ -237,9 +258,11 @@
       <li><span contenteditable="false" data-key="do-4">Gesamt: ~6–7 km</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-do')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card">
+  <div class="day-card" data-date="2026-06-27" data-day="fr">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Freitag · 27. Juni</div>
     <div class="day-title" contenteditable="false" data-key="fr-title">Legs + Core</div>
     <span class="tag tag-gym">🏋️ Gym</span>
@@ -251,9 +274,11 @@
       <li>Abschluss: <span class="highlight" contenteditable="false" data-key="fr-4">Side Plank + Core</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-fr')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card">
+  <div class="day-card" data-date="2026-06-28" data-day="sa">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Samstag · 28. Juni</div>
     <div class="day-title" contenteditable="false" data-key="sa-title">Push (Vorsichtig)</div>
     <span class="tag tag-gym">🏋️ Gym</span>
@@ -265,9 +290,11 @@
       <li><span contenteditable="false" data-key="sa-4">Lateral Raises – 3×15</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-sa')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card">
+  <div class="day-card" data-date="2026-06-29" data-day="so">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Sonntag · 29. Juni</div>
     <div class="day-title" contenteditable="false" data-key="so-title">Long Run</div>
     <span class="tag tag-run">🏃 Laufen</span>
@@ -278,11 +305,11 @@
       <li><span contenteditable="false" data-key="so-3">Ab 40 min: Wasser mitnehmen</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-so')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
 </div>
 
-<!-- Intervall Details -->
 <div class="interval-box">
   <h2>⚡ Intervall-Protokoll (Donnerstag)</h2>
   <div class="interval-steps">
@@ -321,7 +348,6 @@
   </div>
 </div>
 
-<!-- Brust Hinweis -->
 <div class="brust-box">
   <div class="icon">⚠️</div>
   <div>
@@ -330,7 +356,6 @@
   </div>
 </div>
 
-<!-- Prioritätenliste -->
 <div class="priority-section">
   <h2>Wenn die Woche nicht klappt – Prioritäten</h2>
   <div class="priority-list">
@@ -365,9 +390,86 @@
 
 <script>
   const STORAGE_KEY = 'trainingsplan-kw26-edits';
+  const DONE_KEY    = 'trainingsplan-kw26-done';
   let editMode = false;
 
-  // --- Load saved data on startup ---
+  function getTodayISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function applyTodayHighlight() {
+    const today = getTodayISO();
+    document.querySelectorAll('.day-card[data-date]').forEach(card => {
+      if (card.getAttribute('data-date') === today) {
+        card.classList.add('today');
+      } else {
+        card.classList.remove('today');
+      }
+    });
+    updateBadges();
+  }
+
+  function loadDone() {
+    const done = JSON.parse(localStorage.getItem(DONE_KEY) || '[]');
+    done.forEach(day => {
+      const card = document.querySelector(`.day-card[data-day="${day}"]`);
+      if (card) card.classList.add('done');
+    });
+    updateBadges();
+  }
+
+  function saveDone() {
+    const done = [];
+    document.querySelectorAll('.day-card.done').forEach(card => {
+      done.push(card.getAttribute('data-day'));
+    });
+    localStorage.setItem(DONE_KEY, JSON.stringify(done));
+  }
+
+  function toggleDone(card) {
+    if (editMode) return;
+    const wasDone = card.classList.contains('done');
+    card.classList.toggle('done');
+    saveDone();
+    updateBadge(card);
+    showToast(wasDone ? '↩ Markierung entfernt' : '✓ Als erledigt markiert');
+  }
+
+  function updateBadge(card) {
+    const badge = card.querySelector('.auto-badge');
+    if (!badge) return;
+    const isDone = card.classList.contains('done');
+    const isToday = card.classList.contains('today');
+    const isRest = card.classList.contains('rest');
+
+    if (isDone) {
+      badge.textContent = '✓ DONE';
+      badge.style.background = '#4ade80';
+      badge.style.color = '#000';
+      badge.style.display = 'block';
+    } else if (isToday) {
+      badge.textContent = 'HEUTE';
+      badge.style.background = '#fc4c02';
+      badge.style.color = '#fff';
+      badge.style.display = 'block';
+    } else if (isRest) {
+      badge.textContent = 'REST';
+      badge.style.background = '#333';
+      badge.style.color = '#888';
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function updateBadges() {
+    document.querySelectorAll('.day-card').forEach(updateBadge);
+  }
+
   function loadSaved() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     document.querySelectorAll('[data-key]').forEach(el => {
@@ -376,7 +478,6 @@
     });
   }
 
-  // --- Save all editable fields ---
   function saveAll() {
     const data = {};
     document.querySelectorAll('[data-key]').forEach(el => {
@@ -386,14 +487,13 @@
     showToast('✓ Gespeichert');
   }
 
-  // --- Reset to original ---
   function resetAll() {
-    if (!confirm('Alle eigenen Änderungen zurücksetzen?')) return;
+    if (!confirm('Alle eigenen Änderungen und Done-Markierungen zurücksetzen?')) return;
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(DONE_KEY);
     location.reload();
   }
 
-  // --- Toggle edit mode ---
   function toggleEdit() {
     editMode = !editMode;
     document.body.classList.toggle('edit-mode', editMode);
@@ -404,11 +504,10 @@
     document.getElementById('editIndicator').className = 'edit-indicator' + (editMode ? '' : ' off');
     document.getElementById('editStatus').textContent = editMode
       ? 'Bearbeitungsmodus aktiv — klicke auf beliebigen Text zum Ändern'
-      : 'Bearbeitungsmodus aus — klicke „Bearbeiten“ um Änderungen vorzunehmen';
+      : 'Bearbeitungsmodus aus — klicke „Bearbeiten" um Änderungen vorzunehmen';
     if (!editMode) saveAll();
   }
 
-  // --- Add a new list item ---
   function addItem(listId) {
     const ul = document.getElementById(listId);
     const li = document.createElement('li');
@@ -419,11 +518,10 @@
     span.setAttribute('data-key', listId + '-new-' + Date.now());
     span.addEventListener('focus', () => { if (span.textContent.startsWith('Neue')) span.textContent = ''; span.style.color = ''; });
     li.appendChild(span);
-    ul.insertBefore(li, ul.querySelector('.add-item-btn'));
+    ul.appendChild(li);
     span.focus();
   }
 
-  // --- Toast ---
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -431,12 +529,20 @@
     setTimeout(() => t.classList.remove('show'), 2000);
   }
 
-  // Auto-save on Ctrl+S / Cmd+S
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (editMode) saveAll(); }
   });
 
   loadSaved();
+  applyTodayHighlight();
+  loadDone();
+
+  const now = new Date();
+  const msUntilMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now;
+  setTimeout(() => {
+    applyTodayHighlight();
+    setInterval(applyTodayHighlight, 86400000);
+  }, msUntilMidnight);
 </script>
 
 </body>
