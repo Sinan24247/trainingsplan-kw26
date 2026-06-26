@@ -58,24 +58,10 @@
     }
     .day-card:hover { transform: translateY(-3px); border-color: #444; }
 
-    /* TODAY — auto via JS */
     .day-card.today { border-color: #fc4c02; box-shadow: 0 0 0 1px #fc4c0240; }
-    .day-card.today .auto-badge {
-      content: ''; position: absolute; top: 14px; right: 14px;
-      background: #fc4c02; color: #fff; font-size: 0.65rem; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px;
-    }
-
-    /* DONE — user toggled */
     .day-card.done { opacity: 0.55; border-color: #2a2a2a !important; box-shadow: none !important; }
-    .day-card.done .auto-badge {
-      background: #4ade80 !important; color: #000 !important;
-    }
-
-    /* REST */
-    .day-card.rest .auto-badge {
-      background: #333; color: #888;
-    }
+    .day-card.skipped { opacity: 0.45; border-color: #2a2a2a !important; box-shadow: none !important; }
+    .day-card.barca { border-color: #facc1560; }
 
     .auto-badge {
       position: absolute; top: 14px; right: 14px;
@@ -87,7 +73,6 @@
     .auto-badge:hover { transform: scale(1.08); }
     .auto-badge:active { transform: scale(0.95); }
 
-    /* Done-button (visible only when NOT done and not in edit mode) */
     .done-btn {
       display: none;
       margin-top: 12px; width: 100%;
@@ -97,7 +82,7 @@
       transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .done-btn:hover { background: #4ade8015; color: #4ade80; border-color: #4ade8050; }
-    body:not(.edit-mode) .day-card:not(.done):not(.rest) .done-btn { display: block; }
+    body:not(.edit-mode) .day-card:not(.done):not(.rest):not(.skipped) .done-btn { display: block; }
 
     .day-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 1px;
       text-transform: uppercase; color: #666; margin-bottom: 6px; }
@@ -110,6 +95,8 @@
     .tag-gym    { background: #1a2a3a; color: #60a5fa; }
     .tag-hyrox  { background: #2a1a3a; color: #c084fc; }
     .tag-rest   { background: #222; color: #666; }
+    .tag-barca  { background: #2a2510; color: #facc15; }
+    .tag-skip   { background: #2a1a1a; color: #666; }
     .detail-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
     .detail-list li {
       display: flex; align-items: flex-start; gap: 8px;
@@ -117,6 +104,7 @@
     }
     .detail-list li::before { content: '→'; color: #555; flex-shrink: 0; margin-top: 1px; }
     .highlight { color: #fc4c02; font-weight: 600; }
+    .highlight-gold { color: #facc15; font-weight: 600; }
 
     .add-item-btn {
       display: none;
@@ -127,6 +115,42 @@
     }
     .add-item-btn:hover { color: #fc4c02; border-color: #fc4c0260; }
     body.edit-mode .add-item-btn { display: block; }
+
+    .barca-banner {
+      max-width: 1100px; margin: 0 auto 28px;
+      background: #1a1800; border: 1px solid #facc1540;
+      border-radius: 14px; padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.88rem; color: #facc15;
+    }
+    .barca-banner .icon { font-size: 1.5rem; }
+    .barca-banner strong { color: #fff; }
+
+    .push-box {
+      max-width: 1100px; margin: 0 auto 48px; background: #0f1520;
+      border: 1px solid #60a5fa50; border-radius: 16px; padding: 20px 24px;
+    }
+    .push-box h2 { font-size: 1rem; font-weight: 700; color: #60a5fa; margin-bottom: 16px; }
+    .push-steps { display: flex; flex-direction: column; gap: 10px; }
+    .push-step { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: #1a2030; border-radius: 10px; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #60a5fa20; color: #60a5fa; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-info { flex: 1; }
+    .step-title { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .step-detail { font-size: 0.8rem; color: #888; }
+    .step-badge { font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+    .badge-hard { background: #fc4c0220; color: #fc4c02; }
+    .badge-easy { background: #4ade8020; color: #4ade80; }
+    .badge-warm { background: #60a5fa20; color: #60a5fa; }
+    .badge-gold { background: #facc1520; color: #facc15; }
+
+    .brust-box {
+      max-width: 1100px; margin: 0 auto 48px; background: #1f1510;
+      border: 1px solid #fc4c0250; border-radius: 16px; padding: 20px 24px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .brust-box .icon { font-size: 1.4rem; flex-shrink: 0; }
+    .brust-box h3 { font-size: 0.9rem; font-weight: 700; color: #fc4c02; margin-bottom: 6px; }
+    .brust-box p { font-size: 0.85rem; color: #bbb; line-height: 1.5; }
 
     .priority-section {
       max-width: 1100px; margin: 0 auto 48px; background: #1a1a1a;
@@ -140,30 +164,8 @@
     .prio-yellow { background: #facc15; }
     .prio-orange { background: #fb923c; }
     .prio-red    { background: #f87171; }
+    .prio-grey   { background: #555; }
     .prio-label { color: #aaa; }
-    .brust-box {
-      max-width: 1100px; margin: 0 auto 48px; background: #1f1510;
-      border: 1px solid #fc4c0250; border-radius: 16px; padding: 20px 24px;
-      display: flex; gap: 14px; align-items: flex-start;
-    }
-    .brust-box .icon { font-size: 1.4rem; flex-shrink: 0; }
-    .brust-box h3 { font-size: 0.9rem; font-weight: 700; color: #fc4c02; margin-bottom: 6px; }
-    .brust-box p { font-size: 0.85rem; color: #bbb; line-height: 1.5; }
-    .interval-box {
-      max-width: 1100px; margin: 0 auto 48px; background: #0f1f0f;
-      border: 1px solid #4ade8050; border-radius: 16px; padding: 20px 24px;
-    }
-    .interval-box h2 { font-size: 1rem; font-weight: 700; color: #4ade80; margin-bottom: 16px; }
-    .interval-steps { display: flex; flex-direction: column; gap: 10px; }
-    .interval-step { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: #1a2a1a; border-radius: 10px; }
-    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #4ade8020; color: #4ade80; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .step-info { flex: 1; }
-    .step-title { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
-    .step-detail { font-size: 0.8rem; color: #888; }
-    .step-badge { font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
-    .badge-hard { background: #fc4c0220; color: #fc4c02; }
-    .badge-easy { background: #4ade8020; color: #4ade80; }
-    .badge-warm { background: #60a5fa20; color: #60a5fa; }
 
     .toast {
       position: fixed; bottom: 24px; right: 24px;
@@ -184,7 +186,7 @@
 
 <header>
   <h1>Trainingsplan</h1>
-  <p>KW 26 · 23.–29. Juni 2026 · Post-HYROX Woche</p>
+  <p>KW 26 · 23.–29. Juni 2026 · Post-HYROX + Barcelona 🇪🇸</p>
 </header>
 
 <div class="edit-bar">
@@ -198,9 +200,15 @@
   </div>
 </div>
 
+<div class="barca-banner">
+  <span class="icon">✈️</span>
+  <div><strong>Sa 28. – Di 30. Juni: Barcelona 🇪🇸</strong> — Kein Gym, primär Laufen. Nutze die Stadt!</div>
+</div>
+
 <div class="week-grid" id="weekGrid">
 
-  <div class="day-card" data-date="2026-06-23" data-day="mo">
+  <!-- MONTAG – HYROX DONE -->
+  <div class="day-card done" data-date="2026-06-23" data-day="mo">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Montag · 23. Juni</div>
     <div class="day-title" contenteditable="false" data-key="mo-title">HYROX</div>
@@ -214,7 +222,8 @@
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card" data-date="2026-06-24" data-day="di">
+  <!-- DIENSTAG – RECOVERY DONE -->
+  <div class="day-card done" data-date="2026-06-24" data-day="di">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Dienstag · 24. Juni</div>
     <div class="day-title" contenteditable="false" data-key="di-title">Aktive Erholung</div>
@@ -222,14 +231,14 @@
     <ul class="detail-list" id="list-di">
       <li><span contenteditable="false" data-key="di-0">Mobility &amp; Foam Rolling</span></li>
       <li><span contenteditable="false" data-key="di-1">Spazieren gehen 20–30 min</span></li>
-      <li><span class="highlight" contenteditable="false" data-key="di-2">Pflicht</span> nach HYROX-Belastung</li>
-      <li><span contenteditable="false" data-key="di-3">Kein Krafttraining heute</span></li>
+      <li><span class="highlight" contenteditable="false" data-key="di-2">✓ Erledigt</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-di')">+ Zeile hinzufügen</button>
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card" data-date="2026-06-25" data-day="mi">
+  <!-- MITTWOCH – PULL DONE -->
+  <div class="day-card done" data-date="2026-06-25" data-day="mi">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Mittwoch · 25. Juni</div>
     <div class="day-title" contenteditable="false" data-key="mi-title">Pull + Core</div>
@@ -245,105 +254,134 @@
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card" data-date="2026-06-26" data-day="do">
-    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
+  <!-- DONNERSTAG – GESTRICHEN -->
+  <div class="day-card skipped" data-date="2026-06-26" data-day="do">
+    <span class="auto-badge" style="background:#333;color:#666;display:block;">SKIP</span>
     <div class="day-label">Donnerstag · 26. Juni</div>
     <div class="day-title" contenteditable="false" data-key="do-title">Tempo Run</div>
-    <span class="tag tag-run">🏃 Laufen</span>
+    <span class="tag tag-skip">— Keine Zeit</span>
     <ul class="detail-list" id="list-do">
-      <li><span contenteditable="false" data-key="do-0">10 min Aufwärmen locker</span></li>
-      <li><span class="highlight" contenteditable="false" data-key="do-1">3× 1000m @ ~5:00/km</span></li>
-      <li><span contenteditable="false" data-key="do-2">90s Trabpause zwischen Intervallen</span></li>
-      <li><span contenteditable="false" data-key="do-3">5 min Auslaufen</span></li>
-      <li><span contenteditable="false" data-key="do-4">Gesamt: ~6–7 km</span></li>
+      <li><span contenteditable="false" data-key="do-0">3× 1000m Intervalle entfallen</span></li>
+      <li><span contenteditable="false" data-key="do-1">Wird in Barcelona nachgeholt</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-do')">+ Zeile hinzufügen</button>
-    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
+  <!-- FREITAG – PUSH HEUTE -->
   <div class="day-card" data-date="2026-06-27" data-day="fr">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Freitag · 27. Juni</div>
-    <div class="day-title" contenteditable="false" data-key="fr-title">Legs + Core</div>
+    <div class="day-title" contenteditable="false" data-key="fr-title">Push — schnell &amp; effizient</div>
     <span class="tag tag-gym">🏋️ Gym</span>
     <ul class="detail-list" id="list-fr">
-      <li><span contenteditable="false" data-key="fr-0">Back Squat / Front Squat – 4×8</span></li>
-      <li><span contenteditable="false" data-key="fr-1">Romanian Deadlift – 4×10</span></li>
-      <li><span contenteditable="false" data-key="fr-2">Bulgarian Split Squat – 3×10</span></li>
-      <li><span contenteditable="false" data-key="fr-3">Leg Press – 3×12</span></li>
-      <li>Abschluss: <span class="highlight" contenteditable="false" data-key="fr-4">Side Plank + Core</span></li>
+      <li><span class="highlight" contenteditable="false" data-key="fr-0">OHP – 4×6–8, schwer</span></li>
+      <li><span contenteditable="false" data-key="fr-1">Bankdrücken – 4×8 (wenn Schmerz ≤ 2)</span></li>
+      <li><span contenteditable="false" data-key="fr-2">Close-Grip Bench / Skull Crushers – 3×10</span></li>
+      <li><span contenteditable="false" data-key="fr-3">Lateral Raises – 3×15 (Supersatz mit Trizeps)</span></li>
+      <li><span contenteditable="false" data-key="fr-4">Kein Warm-up-Filler — straight to work sets</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-fr')">+ Zeile hinzufügen</button>
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card" data-date="2026-06-28" data-day="sa">
+  <!-- SAMSTAG – BARCELONA ANKUNFT / EASY RUN -->
+  <div class="day-card barca" data-date="2026-06-28" data-day="sa">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Samstag · 28. Juni</div>
-    <div class="day-title" contenteditable="false" data-key="sa-title">Push (Vorsichtig)</div>
-    <span class="tag tag-gym">🏋️ Gym</span>
+    <div class="day-title" contenteditable="false" data-key="sa-title">Easy Run – Barca 🇪🇸</div>
+    <span class="tag tag-barca">✈️ Barcelona</span>
     <ul class="detail-list" id="list-sa">
-      <li><span contenteditable="false" data-key="sa-0">OHP – Hauptübung, 4×8</span></li>
-      <li><span contenteditable="false" data-key="sa-1">Trizeps: Close-Grip, Skull Crushers</span></li>
-      <li>Brust: <span class="highlight" contenteditable="false" data-key="sa-2">nur wenn Schmerz ≤ 2</span></li>
-      <li><span contenteditable="false" data-key="sa-3">Kein Incline DB Press!</span></li>
-      <li><span contenteditable="false" data-key="sa-4">Lateral Raises – 3×15</span></li>
+      <li><span contenteditable="false" data-key="sa-0">30–40 min locker durch die Stadt</span></li>
+      <li><span class="highlight-gold" contenteditable="false" data-key="sa-1">Zone 2 – Beine lockern nach Flug</span></li>
+      <li><span contenteditable="false" data-key="sa-2">Pace egal, Spaß & Eindrücke</span></li>
+      <li><span contenteditable="false" data-key="sa-3">Kein Gym nötig</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-sa')">+ Zeile hinzufügen</button>
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
-  <div class="day-card" data-date="2026-06-29" data-day="so">
+  <!-- SONNTAG – BARCELONA TEMPO/LONG -->
+  <div class="day-card barca" data-date="2026-06-29" data-day="so">
     <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
     <div class="day-label">Sonntag · 29. Juni</div>
-    <div class="day-title" contenteditable="false" data-key="so-title">Long Run</div>
-    <span class="tag tag-run">🏃 Laufen</span>
+    <div class="day-title" contenteditable="false" data-key="so-title">Tempo Run – Barca 🇪🇸</div>
+    <span class="tag tag-barca">✈️ Barcelona</span>
     <ul class="detail-list" id="list-so">
-      <li><span class="highlight" contenteditable="false" data-key="so-0">55–60 min</span> – keine Pace-Vorgabe</li>
-      <li><span contenteditable="false" data-key="so-1">Zone 2: 135–150 bpm durchgehend</span></li>
-      <li><span contenteditable="false" data-key="so-2">Sehr locker – Wochenabschluss</span></li>
-      <li><span contenteditable="false" data-key="so-3">Ab 40 min: Wasser mitnehmen</span></li>
+      <li><span class="highlight-gold" contenteditable="false" data-key="so-0">3× 1000m @ ~5:00/km</span> — nachgeholt!</li>
+      <li><span contenteditable="false" data-key="so-1">10 min Aufwärmen, 90s Pause zwischen Intervallen</span></li>
+      <li><span contenteditable="false" data-key="so-2">Strandpromenade / Parc de la Ciutadella</span></li>
+      <li><span contenteditable="false" data-key="so-3">Gesamt: ~6–7 km</span></li>
     </ul>
     <button class="add-item-btn" onclick="addItem('list-so')">+ Zeile hinzufügen</button>
     <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
   </div>
 
+  <!-- MONTAG (KW27) – BARCELONA EASY -->
+  <div class="day-card barca" data-date="2026-06-30" data-day="mo2">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
+    <div class="day-label">Montag · 30. Juni</div>
+    <div class="day-title" contenteditable="false" data-key="mo2-title">Easy Run – Barca 🇪🇸</div>
+    <span class="tag tag-barca">✈️ Barcelona</span>
+    <ul class="detail-list" id="list-mo2">
+      <li><span contenteditable="false" data-key="mo2-0">40–50 min Zone 2 locker</span></li>
+      <li><span contenteditable="false" data-key="mo2-1">Strandpromenade Barceloneta</span></li>
+      <li><span class="highlight-gold" contenteditable="false" data-key="mo2-2">Long Run Ersatz</span></li>
+    </ul>
+    <button class="add-item-btn" onclick="addItem('list-mo2')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
+  </div>
+
+  <!-- DIENSTAG (KW27) – BARCELONA / RÜCKREISE -->
+  <div class="day-card barca" data-date="2026-07-01" data-day="di2">
+    <span class="auto-badge" onclick="toggleDone(this.closest('.day-card'))"></span>
+    <div class="day-label">Dienstag · 1. Juli</div>
+    <div class="day-title" contenteditable="false" data-key="di2-title">Mobility / Leichtlauf 🇪🇸</div>
+    <span class="tag tag-barca">✈️ Barcelona</span>
+    <ul class="detail-list" id="list-di2">
+      <li><span contenteditable="false" data-key="di2-0">20–30 min locker oder Mobility</span></li>
+      <li><span contenteditable="false" data-key="di2-1">Je nach Rückflug-Zeitplan</span></li>
+      <li><span class="highlight-gold" contenteditable="false" data-key="di2-2">Optional</span> — Erholung Priorität</li>
+    </ul>
+    <button class="add-item-btn" onclick="addItem('list-di2')">+ Zeile hinzufügen</button>
+    <button class="done-btn" onclick="toggleDone(this.closest('.day-card'))">✓ Als erledigt markieren</button>
+  </div>
+
 </div>
 
-<div class="interval-box">
-  <h2>⚡ Intervall-Protokoll (Donnerstag)</h2>
-  <div class="interval-steps">
-    <div class="interval-step">
+<div class="push-box">
+  <h2>🏋️ Push-Protokoll heute (Freitag) — schnell &amp; effizient</h2>
+  <div class="push-steps">
+    <div class="push-step">
       <div class="step-num">1</div>
       <div class="step-info">
-        <div class="step-title" contenteditable="false" data-key="int-t1">Aufwärmen</div>
-        <div class="step-detail" contenteditable="false" data-key="int-d1">10 Minuten · Pace egal · einfühlen</div>
+        <div class="step-title" contenteditable="false" data-key="push-t1">OHP</div>
+        <div class="step-detail" contenteditable="false" data-key="push-d1">4 Sätze × 6–8 Wdh · schweres Gewicht · Hauptübung</div>
       </div>
-      <span class="step-badge badge-warm" contenteditable="false" data-key="int-b1">~1,5 km</span>
+      <span class="step-badge badge-hard" contenteditable="false" data-key="push-b1">Prio 1</span>
     </div>
-    <div class="interval-step">
+    <div class="push-step">
       <div class="step-num">2</div>
       <div class="step-info">
-        <div class="step-title" contenteditable="false" data-key="int-t2">Intervall 1–3 · je 1000m</div>
-        <div class="step-detail" contenteditable="false" data-key="int-d2">Ziel: ~5:00 min/km · HF 170–182 bpm</div>
+        <div class="step-title" contenteditable="false" data-key="push-t2">Bankdrücken</div>
+        <div class="step-detail" contenteditable="false" data-key="push-d2">4 × 8 · nur bei Schmerz ≤ 2 · sonst Kabelzüge</div>
       </div>
-      <span class="step-badge badge-hard" contenteditable="false" data-key="int-b2">5:00/km</span>
+      <span class="step-badge badge-hard" contenteditable="false" data-key="push-b2">⚠️ Brust</span>
     </div>
-    <div class="interval-step">
+    <div class="push-step">
       <div class="step-num">3</div>
       <div class="step-info">
-        <div class="step-title" contenteditable="false" data-key="int-t3">Pause zwischen Intervallen</div>
-        <div class="step-detail" contenteditable="false" data-key="int-d3">90 Sekunden traben · HF runter auf ~145 bpm</div>
+        <div class="step-title" contenteditable="false" data-key="push-t3">Trizeps Supersatz</div>
+        <div class="step-detail" contenteditable="false" data-key="push-d3">Close-Grip Bench + Skull Crushers · 3×10 · kurze Pause</div>
       </div>
-      <span class="step-badge badge-easy" contenteditable="false" data-key="int-b3">locker</span>
+      <span class="step-badge badge-easy" contenteditable="false" data-key="push-b3">Superset</span>
     </div>
-    <div class="interval-step">
+    <div class="push-step">
       <div class="step-num">4</div>
       <div class="step-info">
-        <div class="step-title" contenteditable="false" data-key="int-t4">Auslaufen</div>
-        <div class="step-detail" contenteditable="false" data-key="int-d4">5 Minuten · locker · Beine ausschütteln</div>
+        <div class="step-title" contenteditable="false" data-key="push-t4">Lateral Raises</div>
+        <div class="step-detail" contenteditable="false" data-key="push-d4">3 × 15 · im Supersatz mit Trizepsübung</div>
       </div>
-      <span class="step-badge badge-warm" contenteditable="false" data-key="int-b4">~0,7 km</span>
+      <span class="step-badge badge-warm" contenteditable="false" data-key="push-b4">Schultern</span>
     </div>
   </div>
 </div>
@@ -351,39 +389,39 @@
 <div class="brust-box">
   <div class="icon">⚠️</div>
   <div>
-    <h3>Brust-Protokoll (Samstag · Push)</h3>
+    <h3>Brust-Protokoll</h3>
     <p contenteditable="false" data-key="brust-text">Kein Incline Dumbbell Press. Bankdrücken nur bei Schmerzskala ≤ 2, sonst Kabelzüge als Ersatz. Bei Push-up-Schmerz → komplett weglassen, Trizeps-Fokus stattdessen.</p>
   </div>
 </div>
 
 <div class="priority-section">
-  <h2>Wenn die Woche nicht klappt – Prioritäten</h2>
+  <h2>Restwoche — Angepasste Prioritäten</h2>
   <div class="priority-list">
     <div class="priority-item">
       <div class="prio-dot prio-green"></div>
-      <span class="prio-label" contenteditable="false" data-key="prio-1"><strong style="color:#fff">1. Pull-Einheit (Mi)</strong> – Rücken stärken, Brust schonen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-1"><strong style="color:#fff">✓ Pull (Mi)</strong> — erledigt</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-green"></div>
-      <span class="prio-label" contenteditable="false" data-key="prio-2"><strong style="color:#fff">2. Tempo Run (Do)</strong> – wichtig für VO₂max und Lauffortschritt</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-2"><strong style="color:#fff">1. Push heute (Fr)</strong> — letzter Gym-Tag vor Barca</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-yellow"></div>
-      <span class="prio-label" contenteditable="false" data-key="prio-3"><strong style="color:#fff">3. Legs (Fr)</strong> – Fundament für HYROX und Laufen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-3"><strong style="color:#fff">2. Tempo Run (So · Barca)</strong> — Do-Einheit nachgeholt</span>
     </div>
     <div class="priority-item">
       <div class="prio-dot prio-yellow"></div>
-      <span class="prio-label" contenteditable="false" data-key="prio-4"><strong style="color:#fff">4. Long Run (So)</strong> – höchste Longevity-Wirkung, nicht skippen</span>
+      <span class="prio-label" contenteditable="false" data-key="prio-4"><strong style="color:#fff">3. Easy Runs (Sa + Mo · Barca)</strong> — Zone 2, Longevity</span>
     </div>
     <div class="priority-item">
-      <div class="prio-dot prio-red"></div>
-      <span class="prio-label" contenteditable="false" data-key="prio-5"><strong style="color:#fff">5. Push-Einheit (Sa)</strong> – niedrigste Priorität solange Brust limitiert</span>
+      <div class="prio-dot prio-grey"></div>
+      <span class="prio-label" contenteditable="false" data-key="prio-5"><strong style="color:#888">— Tempo Run (Do)</strong> — keine Zeit, kein Problem</span>
     </div>
   </div>
 </div>
 
 <footer>
-  Erstellt mit Perplexity · <span>KW 26 · 2026</span> · Post-HYROX Woche
+  Erstellt mit Perplexity · <span>KW 26 · 2026</span> · Post-HYROX + Barcelona 🇪🇸
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -404,7 +442,7 @@
   function applyTodayHighlight() {
     const today = getTodayISO();
     document.querySelectorAll('.day-card[data-date]').forEach(card => {
-      if (card.getAttribute('data-date') === today) {
+      if (card.getAttribute('data-date') === today && !card.classList.contains('skipped')) {
         card.classList.add('today');
       } else {
         card.classList.remove('today');
@@ -414,7 +452,7 @@
   }
 
   function loadDone() {
-    const done = JSON.parse(localStorage.getItem(DONE_KEY) || '[]');
+    const done = JSON.parse(localStorage.getItem(DONE_KEY) || '["mo","di","mi"]');
     done.forEach(day => {
       const card = document.querySelector(`.day-card[data-day="${day}"]`);
       if (card) card.classList.add('done');
@@ -432,6 +470,7 @@
 
   function toggleDone(card) {
     if (editMode) return;
+    if (card.classList.contains('skipped')) return;
     const wasDone = card.classList.contains('done');
     card.classList.toggle('done');
     saveDone();
@@ -444,9 +483,12 @@
     if (!badge) return;
     const isDone = card.classList.contains('done');
     const isToday = card.classList.contains('today');
-    const isRest = card.classList.contains('rest');
+    const isSkipped = card.classList.contains('skipped');
 
-    if (isDone) {
+    if (isSkipped) {
+      // static badge already in HTML
+      return;
+    } else if (isDone) {
       badge.textContent = '✓ DONE';
       badge.style.background = '#4ade80';
       badge.style.color = '#000';
@@ -455,11 +497,6 @@
       badge.textContent = 'HEUTE';
       badge.style.background = '#fc4c02';
       badge.style.color = '#fff';
-      badge.style.display = 'block';
-    } else if (isRest) {
-      badge.textContent = 'REST';
-      badge.style.background = '#333';
-      badge.style.color = '#888';
       badge.style.display = 'block';
     } else {
       badge.style.display = 'none';
